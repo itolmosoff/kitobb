@@ -1,0 +1,11 @@
+import {useState} from 'react';import {api} from './api';import {Icon,Avatar,Msg,Empty,toast,useLoad} from './ui.jsx';import {Tile} from './Home.jsx';import {t} from './i18n';
+export default function Charity(){const [tab,setTab]=useState('1');const [st]=useLoad(()=>api('/charity-stats'),[],30000);const [books,err]=useLoad(()=>api('/books?free='+tab),[tab],15000);const [favs,,rf]=useLoad(()=>api('/fav-ids'),[]);
+ const tog=async id=>{try{await api('/favs/'+id,'POST');rf()}catch(e){toast(e.message,'bad')}};
+ return <div><div className="pageh"><h1><Icon n="heart" size={26}/> Bepul va xayriya kitoblari</h1></div>
+  <div className="charity-hero"><div><h3>Keraksiz kitobingiz kimningdir kerakli kitobi bo‘lishi mumkin</h3><p>Bepul berilgan kitobni birinchi bo‘lib so‘ragan odam oladi. “Xayriya” belgisi esa maktab, kutubxona va bolalar uyiga mo‘ljallangan kitoblarni bildiradi.</p>
+   <a className="btn" href="#/add"><Icon n="plus" size={18}/>Kitob sovg‘a qilish</a></div>
+   <div className="chs"><div><b>{st?.gifted??'—'}</b><span>kitob sovg‘a qilindi</span></div><div><b>{st?.charity??'—'}</b><span>xayriyaga berildi</span></div><div><b>{st?.free_books??'—'}</b><span>hozir bepul</span></div></div></div>
+  {st?.donors.length>0&&<div className="card" style={{marginBottom:18}}><div className="sect">Eng saxiy sovg‘achilar</div><div className="donors">{st.donors.map((d,i)=><a key={d.id} href={'#/user/'+d.id} className="donor"><span className="rk">{i+1}</span><Avatar id={d.id} name={d.name} v={d.avatar_v} frame={d.frame} size={38}/><b>{d.name}</b><span className="muted sm">{t('{n} ta kitob',{n:d.n})}</span></a>)}</div></div>}
+  <div className="seg" style={{marginBottom:16}}><button className={tab==='1'?'on':''} onClick={()=>setTab('1')}>Hammasi (bepul)</button><button className={tab==='charity'?'on':''} onClick={()=>setTab('charity')}><Icon n="heart" size={15}/>Xayriya</button></div>
+  <Msg err={err}/>{books?.length===0&&<Empty icon="heart" title="Hozircha bepul kitob yo‘q" text="Birinchi bo‘lib kitob sovg‘a qiling."><a className="btn" href="#/add">Kitob sovg‘a qilish</a></Empty>}
+  {books?.length>0&&<div className="shelf" key={tab}>{books.map((b,i)=><Tile key={b.id} i={i} b={b} fav={favs?.includes(b.id)} onFav={tog}/>)}</div>}</div>}
